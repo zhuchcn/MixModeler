@@ -1,0 +1,9 @@
+.main-header {
+    margin-left: 0px !important;
+}
+.content-wrapper {
+    margin-left: 0px !important;
+}
+.card-body {
+    max-height: none !important;
+}
