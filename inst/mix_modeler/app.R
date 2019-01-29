@@ -25,7 +25,7 @@ ui = bs4DashPage(
                     class = "nav-item activate px-2 my-auto",
                     tags$a(
                         calss = "nav-link",
-                        href = "#",
+                        href = "http://www.github.com/zhuchcn/MixModeler",
                         tags$i(
                             class = "fab fa-github fa-2x"
                         )
