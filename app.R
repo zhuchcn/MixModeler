@@ -7,7 +7,10 @@ source("global.R", local = TRUE)
 
 ui = bs4DashPage(
     navbar = bs4DashNavbar(
-        "Mix Modeler",
+        tags$div(h1(
+            class = "navbar-brand my-auto",
+            "Mix Modeler"
+        )),
         rightUi = tagList(
             tags$ul(
                 class = "navbar-nav mr-auto",
@@ -17,7 +20,7 @@ ui = bs4DashPage(
                         calss = "nav-link",
                         href = "http://www.chenghaozhu.net",
                         tags$i(
-                            class = "fas fa-home fa-2x"
+                            class = "fas fa-home fa-2x text-dark"
                         )
                     )
                 ),
@@ -27,7 +30,7 @@ ui = bs4DashPage(
                         calss = "nav-link",
                         href = "http://www.github.com/zhuchcn/MixModeler",
                         tags$i(
-                            class = "fab fa-github fa-2x"
+                            class = "fab fa-github fa-2x text-dark"
                         )
                     )
                 )
@@ -61,7 +64,7 @@ ui = bs4DashPage(
                         actionButton("colnames_btn", "Column Names", class="btn-outline-primary btn-block pb-2"),
                         tags$hr(),
                         textInput("formula", "Formula",
-                                  placeholder = "Input the formula"),
+                                  placeholder = "value ~ var1 + var2"),
                         actionButton("test", "Test it", class="btn-danger btn-block pb-2"),
                         tags$hr(),
                         actionButton("showHelp", "Help", class="btn-info btn-block pb-2")
@@ -81,6 +84,7 @@ ui = bs4DashPage(
                     id = "help-page",
                     bs4Card(
                         width = 12,
+                        title = "Instructions",
                         tags$ul(
                             calss = "list-group list-group-flush",
                             tags$li(
@@ -168,12 +172,17 @@ server <- function(input, output) {
     # Define the column type modal
     observeEvent(input$coltype_btn, {
         showModal(modalDialog(
+            title = "Column Types",
+            size = "l",
             rHandsontableOutput("colTypeData"),
             footer = tagList(
-                actionButton("coltype_submit", "Submit"),
+                actionButton("coltype_submit", "Submit", class="btn-primary"),
                 modalButton("Cancel")
             )
         ))
+        # Format the cancel button in column type modal
+        shinyjs::addClass(class="btn-danger", selector = ".modal-footer button[data-dismiss='modal']")
+        shinyjs::removeClass(class = "btn-default", selector = ".modal-footer .btn")
     })
     # Define the output of column types
     output$colTypeData = renderRHandsontable({
@@ -217,20 +226,6 @@ server <- function(input, output) {
         }
         removeModal()
     })
-    # Do the linear model
-    observeEvent(input$test, {
-        output$modalResult = renderText({
-            fit = lm(formula = as.formula(input$formula), data = data$data)
-            paste0(capture.output(summary(fit)), collapse = "\n")
-        })
-        showModal(modalDialog(
-            title = "Linear Modal Result:",
-            verbatimTextOutput("modalResult"),
-            size = 'l',
-            easyClose = TRUE,
-            footer = NULL
-        ))
-    })
     # Define the modal for changing of column names
     observeEvent(input$colnames_btn, {
         # Define the table output for colnames changing
@@ -245,17 +240,37 @@ server <- function(input, output) {
         })
         # Show modal
         showModal(modalDialog(
+            style="height: 150px",
+            title = "Column Names",
+            size = "l",
             rHandsontableOutput("hst_colnames"),
             footer = tagList(
-                actionButton("colname_submit", "Submit"),
+                actionButton("colname_submit", "Submit", class="btn-primary"),
                 modalButton("Cancel")
             )
         ))
+        # Format the cancel button in column name modal
+        shinyjs::addClass(class="btn-danger", selector = ".modal-footer button[data-dismiss='modal']")
+        shinyjs::removeClass(class = "btn-default", selector = ".modal-footer .btn")
     })
     # Define the column name change submit
     observeEvent(input$colname_submit, {
         colnames(data$data) = as.character(hot_to_r(input$hst_colnames))
         removeModal()
+    })
+    # Do the linear model
+    observeEvent(input$test, {
+        output$modalResult = renderText({
+            fit = lm(formula = as.formula(input$formula), data = data$data)
+            paste0(capture.output(summary(fit)), collapse = "\n")
+        })
+        showModal(modalDialog(
+            title = "Linear Modal Result:",
+            verbatimTextOutput("modalResult"),
+            size = 'l',
+            easyClose = TRUE,
+            footer = NULL
+        ))
     })
     # Show help page
     observeEvent(input$showHelp, {
@@ -269,12 +284,13 @@ server <- function(input, output) {
     })
     # Remove btn-default from all btn
     shinyjs::removeClass(class = "btn-default", selector = ".btn")
+    # Format the cancel button in column type modal
+    shinyjs::addClass(class="btn-danger", selector = ".")
     # Hide the sidebar
     shinyjs::addClass(class="d-none", selector = ".main-sidebar")
     # Always collapse the sidebar
-    shinyjs::removeClass(class="sidebar-open", selector = "body")
-    shinyjs::addClass(class="sidebar-collapse", selector = "body")
-
+    shinyjs::removeClass(class="sidebar-mini", selector = "body")
+    #shinyjs::addClass(class="sidebar-collapse", selector = "body")\
 }
 
 shinyApp(ui = ui, server = server)
