@@ -7,5 +7,13 @@ dataInit = function(input, data){
     data$nrow = input$nrow
     data$ncol = input$ncol
     data$coltype = sapply(dataInit, class)
-    return(data)
+}
+
+alertModal = function(type, msg){
+    modalDialog(
+        title = type,
+        msg,
+        easyClose = TRUE,
+        footer = NULL
+    )
 }
