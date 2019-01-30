@@ -1,9 +1,20 @@
+/* avoid sidebar */
 .main-header {
     margin-left: 0px !important;
 }
+/* avoid sidebar */
 .content-wrapper {
     margin-left: 0px !important;
 }
 .card-body {
-    max-height: none !important;
+    max-height: 800px !important;
+}
+.modal-header {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+/* This enable the scroll bar appear not all the way in the bottom of the table */
+.handsontable {
+    overflow: hidden;
+    max-height: 750px;
 }
