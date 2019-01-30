@@ -115,10 +115,6 @@ ui = bs4DashPage(
                         )
                     )
                 )
-                # bs4Card(
-                #     width = 12,
-                #     tableOutput("debug")
-                # )
             )
         )
     ),
@@ -126,7 +122,7 @@ ui = bs4DashPage(
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
     shinyjs::hide(id = "my-data-table")
     # Initialize the data
     data = reactiveValues(
@@ -139,21 +135,9 @@ server <- function(input, output) {
         newData = as.data.frame(hot_to_r(input$dataTable))
         if(nrow(newData) == data$nrow & ncol(newData) == data$ncol){
             data$data = newData
-            showModal(modalDialog(
-                tagList(
-                    tags$p("Data submitted!")
-                ),
-                easyClose = TRUE,
-                footer = NULL
-            ))
+            showModal(alertModal("success", "Data imported"))
         } else {
-            showModal(modalDialog(
-                tagList(
-                    tags$p("Something went wrong..")
-                ),
-                easyClose = TRUE,
-                footer = NULL
-            ))
+            showModal(alertModal("error", "Something went wrong.."))
             dataInit(input, data)
         }
     })
@@ -260,17 +244,42 @@ server <- function(input, output) {
     })
     # Do the linear model
     observeEvent(input$test, {
-        output$modalResult = renderText({
-            fit = lm(formula = as.formula(input$formula), data = data$data)
-            paste0(capture.output(summary(fit)), collapse = "\n")
-        })
-        showModal(modalDialog(
-            title = "Linear Modal Result:",
-            verbatimTextOutput("modalResult"),
-            size = 'l',
-            easyClose = TRUE,
-            footer = NULL
-        ))
+        formula = tryCatch(
+            as.formula(input$formula),
+            error = function(e) return("err")
+        )
+        if(formula == "err") {
+            showModal(alertModal(
+                "error",
+                "Please input a valid formula. A valid formua should be like: \"value ~ group\". All variables should present in the column names"
+            ))
+        } else {
+            fit = tryCatch(
+                lm(formula = formula, data = data$data),
+                error = function(e) return(e)
+            )
+            if(is(fit, "error")) {
+                showModal(alertModal("error", fit$message))
+            } else {
+                output$modalResult = renderText({
+                    paste0(capture.output(summary(fit)), collapse = "\n")
+                })
+                showModal(modalDialog(
+                    title = "Linear Modal Result:",
+                    verbatimTextOutput("modalResult"),
+                    size = 'l',
+                    #easyClose = TRUE,
+                    footer = actionButton("lm_modal_dismiss", "Back", class="btn-danger")
+                ))
+                # Format the cancel button in column name modal
+                shinyjs::removeClass(class = "btn-default", selector = ".modal-footer .btn")
+            }
+        }
+    })
+    # Clean the fomula input when dismiss
+    observeEvent(input$lm_modal_dismiss, {
+        removeModal()
+        updateTextInput(session, "formula", value = "")
     })
     # Show help page
     observeEvent(input$showHelp, {
@@ -290,7 +299,6 @@ server <- function(input, output) {
     shinyjs::addClass(class="d-none", selector = ".main-sidebar")
     # Always collapse the sidebar
     shinyjs::removeClass(class="sidebar-mini", selector = "body")
-    #shinyjs::addClass(class="sidebar-collapse", selector = "body")\
 }
 
 shinyApp(ui = ui, server = server)
