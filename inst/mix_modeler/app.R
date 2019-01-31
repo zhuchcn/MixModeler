@@ -45,26 +45,27 @@ ui = bs4DashPage(
             tags$link(rel = "stylesheet", type = "text/css", href="styles.css")
         ),
         shinyjs::useShinyjs(),
+        shinyjs::extendShinyjs(text = jsCode),
         fluidRow(
             class = "pt-2",
             tags$div(
-                class = "col-2-md col-3-sm",
+                class = "col-lg-3 col-md-4 col-sm-5",
                 bs4Card(
                     width = 12,
                     height = "auto",
                     tags$div(
                         class = "my-control-panel",
                         numericInput("nrow", "Number of Rows",
-                                     min = 1, max = 1000, step = 1, value = 1),
+                                     min = 1, max = 1000, step = 1, value = 1, width = "100%"),
                         numericInput("ncol", "Number of Columns",
-                                     min = 1, max = 1000, step = 1, value = 1),
+                                     min = 1, max = 1000, step = 1, value = 1, width = "100%"),
                         actionButton("init", "Initialize it", class="btn-outline-primary btn-block pb-2"),
                         actionButton("data_submit_btn", "Submit It", class="btn-primary btn-block pb-2"),
                         actionButton("coltype_btn", "Column Types", class="btn-outline-primary btn-block pb-2"),
                         actionButton("colnames_btn", "Column Names", class="btn-outline-primary btn-block pb-2"),
                         tags$hr(),
                         textInput("formula", "Formula",
-                                  placeholder = "value ~ var1 + var2"),
+                                  placeholder = "value ~ var1 + var2", width = "100%"),
                         actionButton("test", "Test it", class="btn-danger btn-block pb-2"),
                         tags$hr(),
                         actionButton("showHelp", "Help", class="btn-info btn-block pb-2")
@@ -72,7 +73,7 @@ ui = bs4DashPage(
                 )
             ),
             tags$div(
-                class = "col-10-md col-9-sm",
+                class = "col-lg-9 col-md-8 col-sm-7",
                 tags$div(
                     id = "my-data-table",
                     bs4Card(
@@ -83,6 +84,7 @@ ui = bs4DashPage(
                 tags$div(
                     id = "help-page",
                     bs4Card(
+                        status = "info",
                         width = 12,
                         title = "Instructions",
                         tags$ul(
@@ -147,11 +149,14 @@ server <- function(input, output, session) {
         rhandsontable(data$data) %>%
             hot_cols(colWidths = 100)
     )
+    shinyjs::js$addInlineCss()
     # Initialize it with empty data
     observeEvent(input$init, {
         shinyjs::show(id="my-data-table")
         shinyjs::hide(id="help-page")
         dataInit(input, data)
+        # Reset the formula input if any
+        updateTextInput(session, "formula", value = "")
     })
     # Define the column type modal
     observeEvent(input$coltype_btn, {
@@ -269,17 +274,13 @@ server <- function(input, output, session) {
                     verbatimTextOutput("modalResult"),
                     size = 'l',
                     #easyClose = TRUE,
-                    footer = actionButton("lm_modal_dismiss", "Back", class="btn-danger")
+                    footer = modalButton(label = "Back")
                 ))
                 # Format the cancel button in column name modal
                 shinyjs::removeClass(class = "btn-default", selector = ".modal-footer .btn")
+                shinyjs::addClass(class = "bg-danger", selector = ".modal-footer .btn")
             }
         }
-    })
-    # Clean the fomula input when dismiss
-    observeEvent(input$lm_modal_dismiss, {
-        removeModal()
-        updateTextInput(session, "formula", value = "")
     })
     # Show help page
     observeEvent(input$showHelp, {
