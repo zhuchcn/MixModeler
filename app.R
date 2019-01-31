@@ -45,6 +45,7 @@ ui = bs4DashPage(
             tags$link(rel = "stylesheet", type = "text/css", href="styles.css")
         ),
         shinyjs::useShinyjs(),
+        shinyjs::extendShinyjs(text = jsCode),
         fluidRow(
             class = "pt-2",
             tags$div(
@@ -148,6 +149,7 @@ server <- function(input, output, session) {
         rhandsontable(data$data) %>%
             hot_cols(colWidths = 100)
     )
+    shinyjs::js$addInlineCss()
     # Initialize it with empty data
     observeEvent(input$init, {
         shinyjs::show(id="my-data-table")

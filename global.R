@@ -30,3 +30,13 @@ alertModal = function(type, msg){
     )
 }
 
+# The rHandsontable scrolling bars only work fine when the styling is added to
+# the attribute of the tag. So I have to do this in a ugly way
+jsCode = '
+shinyjs.addInlineCss = function(){
+    const div = document.getElementById("dataTable");
+    div.style["overflow"] = "hidden";
+    div.style["height"] = "750px";
+    div.style["width"] = "auto";
+}
+'

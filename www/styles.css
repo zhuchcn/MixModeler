@@ -13,8 +13,9 @@
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
 }
-/* This enable the scroll bar appear not all the way in the bottom of the table */
-.handsontable {
+/* This enable the scroll bar appear not all the way in the bottom of the table
+#dataTable {
+    height: 750px !important;
+    width: 800px !important;
     overflow: hidden;
-    max-height: 750px;
 }
